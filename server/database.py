@@ -3,7 +3,7 @@ import bcrypt
 
 class Database:
     def __init__(self):
-        self.client = MongoClient("mongodb+srv://your_mongodb_atlas_url")
+        self.client = MongoClient("mongodb+srv://wireless-chat-app:Hari%40810@wireless-chat-app.fd8mm.mongodb.net/?appName=mongosh+2.4.0")
         self.db = self.client["chat_app"]
         self.users = self.db["users"]
         self.messages = self.db["messages"]
