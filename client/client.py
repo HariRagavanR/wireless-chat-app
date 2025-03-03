@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLine
 import socketio 
 
 
-SERVER_URL = "https://your-chat-server.onrender.com"
+SERVER_URL = "https://wireless-chat-app.onrender.com"
 sio = socketio.Client()
 
 
