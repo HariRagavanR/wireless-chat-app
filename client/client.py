@@ -16,7 +16,7 @@ class SocketThread(QThread):
             sio.on("update_users", self.on_users)
             sio.wait()  # Keep the socket running
         except Exception as e:
-            self.received_message.emit(f"❌ Connection Error: {str(e)}")
+            self.received_message.emit(f"Connection Error: {str(e)}")
 
     def on_message(self, data):
         self.received_message.emit(data["message"])
