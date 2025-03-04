@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -83,6 +84,7 @@ def handle_disconnect():
         emit("update_users", db.get_online_users(), broadcast=True)
         print(f"{username} disconnected.")
 
-# ✅ Run the Flask-SocketIO Server
+# ✅ Run the Flask-SocketIO Server with Dynamic Port for Render Deployment
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Use Render's assigned port
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
