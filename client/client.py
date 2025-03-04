@@ -1,60 +1,60 @@
-import sys
-import socketio
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
 from PyQt5.QtCore import QThread, pyqtSignal
+import socketio
 
-# Background thread for SocketIO
-class SocketIOThread(QThread):
+class SocketThread(QThread):
     message_received = pyqtSignal(str)
 
-    def run(self):
-        self.sio = socketio.Client()
-
-        @self.sio.on('message')
-        def on_message(data):
-            self.message_received.emit(data)  # Send message to GUI thread
-
-        self.sio.connect('https://wireless-chat-app.onrender.com')  # Replace with your server
-        self.sio.wait()  # Keep listening for events
-
-    def send_message(self, msg):
-        self.sio.emit('message', msg)
-
-# Main GUI
-class ChatApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.sio = socketio.Client()
 
-        self.setWindowTitle("Chat Client")
+        @self.sio.on("chat_message")
+        def on_message(data):
+            self.message_received.emit(data["message"])
+
+    def run(self):
+        self.sio.connect("https://wireless-chat-app.onrender.com")
+
+    def send_message(self, message):
+        self.sio.emit("message", {"message": message})
+
+class ChatApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Chat App")
         self.setGeometry(100, 100, 400, 300)
 
         self.layout = QVBoxLayout()
 
-        self.text_area = QTextEdit(self)
-        self.text_area.setReadOnly(True)
-        self.layout.addWidget(self.text_area)
+        self.chat_display = QTextEdit(self)
+        self.chat_display.setReadOnly(True)
+        self.layout.addWidget(self.chat_display)
 
-        self.send_button = QPushButton("Send Message", self)
+        self.input_box = QLineEdit(self)
+        self.layout.addWidget(self.input_box)
+
+        self.send_button = QPushButton("Send", self)
         self.send_button.clicked.connect(self.send_message)
         self.layout.addWidget(self.send_button)
 
-        self.container = QWidget()
-        self.container.setLayout(self.layout)
-        self.setCentralWidget(self.container)
+        self.setLayout(self.layout)
 
-        # Start SocketIO in a separate thread
-        self.socket_thread = SocketIOThread()
-        self.socket_thread.message_received.connect(self.display_message)
+        self.socket_thread = SocketThread()
+        self.socket_thread.message_received.connect(self.update_chat)
         self.socket_thread.start()
 
-    def display_message(self, message):
-        self.text_area.append(f"Server: {message}")
-
     def send_message(self):
-        self.socket_thread.send_message("Hello from PyQt!")
+        message = self.input_box.text()
+        if message:
+            self.socket_thread.send_message(message)
+            self.input_box.clear()
+
+    def update_chat(self, message):
+        self.chat_display.append(message)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QApplication([])
     window = ChatApp()
     window.show()
-    sys.exit(app.exec_())
+    app.exec_()
